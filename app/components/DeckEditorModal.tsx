@@ -839,7 +839,10 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
                     key={deck.id}
                     className={deck.id === editingDeck?.id ? "is-active" : ""}
                     aria-pressed={deck.id === editingDeck?.id}
-                    onClick={() => setDeckEditorDeckId(deck.id)}
+                    onClick={() => {
+                      setDeckEditorDeckId(deck.id);
+                      applySelectedTicketToDeck(deck);
+                    }}
                   >
                     <span>덱 {index + 1} · <DeckName deck={deck} showEditionTooltips={false} /></span>
                     <small>{deck.cards.length}/{deck.capacity}</small>

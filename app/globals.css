@@ -6448,8 +6448,9 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
     padding: 8px;
     overflow-x: auto;
     overflow-y: hidden;
+    align-items: flex-start;
     touch-action: pan-x;
-    scrollbar-width: thin;
+    scrollbar-width: none;
   }
   html[data-device-mode="mobile"] .deck-editor-floor-section {
     grid-column: 1;
@@ -6476,11 +6477,20 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
     min-height: 0;
     gap: 7px;
     padding: 8px;
+    align-items: flex-start;
     overflow-x: auto;
     overflow-y: hidden;
     touch-action: pan-x;
-    scrollbar-width: thin;
+    scrollbar-width: none;
   }
+  html[data-device-mode="mobile"] .deck-editor-mobile-decks,
+  html[data-device-mode="mobile"] .deck-editor-card-list,
+  html[data-device-mode="mobile"] .deck-editor-deck-list,
+  html[data-device-mode="mobile"] .deck-editor-floor-cards { scrollbar-width: none; }
+  html[data-device-mode="mobile"] .deck-editor-mobile-decks::-webkit-scrollbar,
+  html[data-device-mode="mobile"] .deck-editor-card-list::-webkit-scrollbar,
+  html[data-device-mode="mobile"] .deck-editor-deck-list::-webkit-scrollbar,
+  html[data-device-mode="mobile"] .deck-editor-floor-cards::-webkit-scrollbar { display: none; }
   html[data-device-mode="mobile"] .deck-editor-panel[data-mobile-section="inventory"] .deck-editor-decks,
   html[data-device-mode="mobile"] .deck-editor-panel[data-mobile-section="inventory"] .deck-editor-floor-section,
   html[data-device-mode="mobile"] .deck-editor-panel[data-mobile-section="decks"] .inventory-column,
