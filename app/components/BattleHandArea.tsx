@@ -391,11 +391,11 @@ export function BattleHandArea({
       >
         <div
           className="hand-track"
-          style={{ "--hand-card-step": `${HAND_CARD_STEP}px`, transform: `translateX(-${trackCenterOffset}px)` } as CSSProperties}
+          style={{ "--hand-card-step": `${handCardStep}px`, transform: `translateX(-${trackCenterOffset}px)` } as CSSProperties}
         >
           {displayedHand.map((card, index) => card ? (
             <button
-              className={`game-card card-face ${mobileLayout ? "uses-simplified-face" : ""} ${card.kind} ${card.damageType} ${HAND_PASSIVE_EFFECTS.has(card.effect) ? "has-hand-aura" : card.effect === "slime" ? "has-danger-aura is-toxic-slime" : ""} ${dragging?.card.id === card.id ? "is-dragging" : ""} ${hoveredHandCardId === card.id ? "is-pointer-hovered" : ""} ${selectedHandCardId === card.id ? "is-keyboard-selected" : ""} ${index < clampedWindowStart || index >= clampedWindowStart + visibleCardCount ? "is-outside-window" : ""}`}
+              className={`game-card ${mobileLayout ? `deck-editor-card rarity-${card.rarity}` : "card-face"} ${card.kind} ${card.damageType} ${HAND_PASSIVE_EFFECTS.has(card.effect) ? "has-hand-aura" : card.effect === "slime" ? "has-danger-aura is-toxic-slime" : ""} ${dragging?.card.id === card.id ? "is-dragging" : ""} ${hoveredHandCardId === card.id ? "is-pointer-hovered" : ""} ${selectedHandCardId === card.id ? "is-keyboard-selected" : ""} ${index < clampedWindowStart || index >= clampedWindowStart + visibleCardCount ? "is-outside-window" : ""}`}
               key={card.id}
               data-card-id={card.id}
               ref={(element) => {
@@ -430,9 +430,7 @@ export function BattleHandArea({
               aria-label={UNPLAYABLE_CARD_EFFECTS.has(card.effect) ? `${card.name}, 비용 -, 사용 불가` : `${card.name}, 에너지 ${cardEnergyCost(card, lawResearchCount, game.forgeCount)}`}
             >
               {mobileLayout ? (
-                <div className={'battle-hand-simple-face rarity-' + card.rarity}>
-                  <DeckEditorCardIcon card={card} />
-                </div>
+                <DeckEditorCardIcon card={card} />
               ) : (
                 <CardFace
                   card={card}

@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type RefObject, type WheelEvent as ReactWheelEvent } from "react";
+import { useRef, useState, useSyncExternalStore, type CSSProperties, type PointerEvent as ReactPointerEvent, type RefObject, type WheelEvent as ReactWheelEvent } from "react";
 import { CardFace } from "./CardFace";
+import { DeckEditorCardIcon } from "./DeckEditorCardIcon";
 import type { Card } from "../game/cards";
 import { canForgeCardOnto, canPlaceBySolitaireRule } from "../game/cardEffects";
 import type { GameState } from "../game/battleState";
@@ -30,8 +31,12 @@ type BattlePileZoneProps = {
   onClearCardHover: () => void;
 };
 
-const CARD_HEIGHT = 170;
 const DEFAULT_STACK_OFFSET = 27;
+const MOBILE_STACK_OFFSET = 10;
+const subscribeDeviceMode = () => () => {};
+const getMobileDeviceMode = () => typeof document !== "undefined"
+  && document.documentElement.dataset.deviceMode === "mobile";
+const getServerDeviceMode = () => false;
 
 export function BattlePileZone({
   game,
@@ -49,6 +54,7 @@ export function BattlePileZone({
   onShowCardKeywordOnly,
   onClearCardHover,
 }: BattlePileZoneProps) {
+  const mobileLayout = useSyncExternalStore(subscribeDeviceMode, getMobileDeviceMode, getServerDeviceMode);
   const pilePanRef = useRef<{ startX: number; scrollLeft: number } | null>(null);
   const [pilePanning, setPilePanning] = useState(false);
   const lawResearchCount = game.activeRuleCards.filter((card) => card.effect === "lawResearch").length;
@@ -113,7 +119,7 @@ export function BattlePileZone({
       >
         <div className="piles" aria-label="카드 파일들">
           {game.piles.map((pile, index) => {
-            const stackOffset = DEFAULT_STACK_OFFSET;
+            const stackOffset = mobileLayout ? MOBILE_STACK_OFFSET : DEFAULT_STACK_OFFSET;
             const discardCount = discardPileCounts.get(index) ?? 0;
             const targetCard = pile.at(-1);
             const activeDrag = dragging;
@@ -130,7 +136,7 @@ export function BattlePileZone({
               <div
                 className={`solitaire-pile ${discardCount > 0 ? "is-discard-target" : ""} ${game.pendingDraws > 0 || game.pendingPileDrawCount > 0 || game.pendingSweep || game.pendingResearchDraw === "astronomy" ? pile.length > 0 ? "is-draw-choice" : "is-draw-empty" : ""}`}
                 key={index}
-                style={{ "--pile-stack-height": `${CARD_HEIGHT + Math.max(0, pile.length - 1) * stackOffset}px` } as CSSProperties}
+                style={{ "--pile-stack-height": `calc(var(--card-h) + ${Math.max(0, pile.length - 1) * stackOffset}px)` } as CSSProperties}
                 data-pile-index={index}
                 data-drop-target={`pile:${index}`}
                 aria-label={`${index + 1}번 파일, ${pile.length}장`}
@@ -149,9 +155,10 @@ export function BattlePileZone({
                   const isMoving = dragging?.source.type === "pile"
                     && dragging.source.pileIndex === index
                     && cardIndex >= dragging.source.cardIndex;
+                  const cardFaceClass = mobileLayout ? `deck-editor-card rarity-${card.rarity}` : "card-face";
                   return (
                     <div
-                      className={`stacked-card ${faceUp ? `card-face face-up pile-draggable-card ${card.kind} ${card.damageType}` : "face-down"} ${isMoving ? "is-dragging" : ""} ${isTop && isValidSolitaireDrop ? isForgeDrop ? "is-forge-drop-target" : "is-solitaire-drop-target" : ""} ${isHoveredSolitaireDrop && isTop ? "is-hovered-solitaire-drop-target" : ""}`}
+                      className={`stacked-card ${faceUp ? `${cardFaceClass} face-up pile-draggable-card ${card.kind} ${card.damageType}` : "face-down"} ${isMoving ? "is-dragging" : ""} ${isTop && isValidSolitaireDrop ? isForgeDrop ? "is-forge-drop-target" : "is-solitaire-drop-target" : ""} ${isHoveredSolitaireDrop && isTop ? "is-hovered-solitaire-drop-target" : ""}`}
                       style={{
                         top: `${cardIndex * stackOffset}px`,
                         "--stack-index": cardIndex,
@@ -184,7 +191,9 @@ export function BattlePileZone({
                       onBlur={faceUp ? onClearCardHover : undefined}
                     >
                       {faceUp
-                        ? <CardFace card={card} strength={game.strength + combatManualBonus + backToBasicsBonus(card)} agility={game.agility + combatManualBonus + backToBasicsBonus(card)} defenseMultiplier={game.defenseMultiplier} ruleCostReduction={lawResearchCount} forgeCount={game.forgeCount} radiancePlayedThisTurn={game.radiancePlayedThisTurn} />
+                        ? mobileLayout
+                          ? <DeckEditorCardIcon card={card} />
+                          : <CardFace card={card} strength={game.strength + combatManualBonus + backToBasicsBonus(card)} agility={game.agility + combatManualBonus + backToBasicsBonus(card)} defenseMultiplier={game.defenseMultiplier} ruleCostReduction={lawResearchCount} forgeCount={game.forgeCount} radiancePlayedThisTurn={game.radiancePlayedThisTurn} />
                         : <span className={`card-back-pattern ${card.colored ? "is-painted" : ""}`} />}
                     </div>
                   );

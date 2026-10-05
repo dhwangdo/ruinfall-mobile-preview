@@ -7048,6 +7048,7 @@ html[data-device-mode="mobile"] .deck-editor-footer .confirm { min-height: 32px;
     min-height: 88px;
   }
   html[data-device-mode="mobile"] .pile-zone {
+    --pile-card-w: 74px;
     grid-column: 1;
     grid-row: 1;
     flex: initial;
@@ -7065,7 +7066,7 @@ html[data-device-mode="mobile"] .deck-editor-footer .confirm { min-height: 32px;
     overflow-x: auto;
     overflow-y: hidden;
   }
-  html[data-device-mode="mobile"] .pile-zone .solitaire-pile { --card-h: clamp(112px, 30dvh, 142px); }
+  html[data-device-mode="mobile"] .pile-zone .solitaire-pile { --card-h: 74px; }
   html[data-device-mode="mobile"] .center-drop-zone {
     grid-column: 1;
     grid-row: 2;
@@ -7079,68 +7080,61 @@ html[data-device-mode="mobile"] .deck-editor-footer .confirm { min-height: 32px;
     width: 100%;
     min-height: 0;
   }
-  html[data-device-mode="mobile"] .game-card.uses-simplified-face {
-    display: block;
-    width: var(--card-w);
-    height: var(--card-h);
-    padding: 0;
-    overflow: visible;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-  html[data-device-mode="mobile"] .game-card.uses-simplified-face::before { display: none; }
-  html[data-device-mode="mobile"] .battle-hand-simple-face {
-    --editor-rarity: #756A60;
-    position: relative;
+  html[data-device-mode="mobile"] .battlefield .player-zone .hand .game-card.deck-editor-card,
+  html[data-device-mode="mobile"] .battlefield .stacked-card.deck-editor-card {
     display: grid;
-    place-items: center;
-    width: 100%;
-    height: 100%;
     min-height: 0;
-    padding: 0;
+    padding: 8px 5px 5px;
     overflow: hidden;
-    border: 3px solid var(--editor-rarity);
+    border-width: 4px;
     border-radius: 4px;
     color: #272725;
     background: var(--card-paper);
-    box-shadow: 0 2px 3px rgba(0,0,0,.25);
-    text-align: center;
+    background-clip: padding-box;
+    box-shadow: var(--editor-stack-shadow, 0 2px 3px rgba(0,0,0,.18));
   }
-  html[data-device-mode="mobile"] .battle-hand-simple-face.rarity-special { --editor-rarity: #3472a2; }
-  html[data-device-mode="mobile"] .battle-hand-simple-face.rarity-status { --editor-rarity: #e34b58; }
-  html[data-device-mode="mobile"] .battle-hand-simple-face.rarity-starter { --editor-rarity: #555B60; }
-  html[data-device-mode="mobile"] .battle-hand-simple-face.rarity-basic { --editor-rarity: #756A60; }
-  html[data-device-mode="mobile"] .battle-hand-simple-face.rarity-rare,
-  html[data-device-mode="mobile"] .battle-hand-simple-face.rarity-legendary { --editor-rarity: var(--rare-border-color); }
-  html[data-device-mode="mobile"] .battle-hand-simple-face::before {
+  html[data-device-mode="mobile"] .battlefield .player-zone .hand {
+    --card-w: 74px;
+    --card-h: 74px;
+  }
+  html[data-device-mode="mobile"] .battlefield .player-zone .hand .game-card.deck-editor-card {
+    --card-w: 74px;
+    --card-h: 74px;
+    width: 74px;
+    height: 74px;
+  }
+  html[data-device-mode="mobile"] .battlefield .stacked-card.deck-editor-card {
+    position: absolute;
+    width: var(--card-w);
+    height: var(--card-h);
+  }
+  html[data-device-mode="mobile"] .battlefield .deck-editor-card::before {
     position: absolute;
     z-index: 0;
     inset: 0 0 auto;
-    height: 24px;
+    height: 19.6px;
     background: var(--editor-rarity);
     content: "";
     pointer-events: none;
   }
-  html[data-device-mode="mobile"] .battle-hand-simple-face .editor-card-cost {
+  html[data-device-mode="mobile"] .battlefield .deck-editor-card .editor-card-cost {
     z-index: 1;
-    top: 4px;
-    left: 6px;
     color: #fff;
-    font: 700 16px/1 Pretendard, Arial, sans-serif;
   }
-  html[data-device-mode="mobile"] .battle-hand-simple-face .editor-card-name {
-    position: absolute;
-    inset: 25px 3px 3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    color: #272725;
-    font: 600 10px/1.2 Pretendard, "Malgun Gothic", sans-serif;
-    text-align: center;
-    overflow-wrap: anywhere;
-    -webkit-line-clamp: initial;
+  html[data-device-mode="mobile"] .player-zone .hand:not(.is-pointer-dragging) .game-card.deck-editor-card.is-pointer-hovered:not(:disabled),
+  html[data-device-mode="mobile"] .player-zone .hand:not(.is-pointer-dragging) .game-card.deck-editor-card:focus-visible,
+  html[data-device-mode="mobile"] .player-zone .hand:not(.is-pointer-dragging) .game-card.deck-editor-card.is-keyboard-selected:not(:disabled),
+  html[data-device-mode="mobile"] .player-zone .hand.is-pointer-dragging .game-card.deck-editor-card.is-pointer-hovered:not(:disabled) {
+    z-index: 3;
+    border-width: 4px;
+    outline: calc(2px / 1.3) solid #e3d49a;
+    transform: translateY(-10px) rotate(0deg) scale(1.3);
+    transform-origin: 50% 100%;
+  }
+  html[data-device-mode="mobile"] .battlefield .pile-draggable-card.deck-editor-card:hover,
+  html[data-device-mode="mobile"] .battlefield .pile-draggable-card.deck-editor-card:focus-visible {
+    z-index: 50;
+    transform: translateY(-4px);
   }
 }
 
@@ -7149,5 +7143,5 @@ html[data-device-mode="mobile"] .deck-editor-footer .confirm { min-height: 32px;
     grid-template-rows: minmax(0, 1fr) 19px clamp(132px, 39dvh, 162px);
   }
   html[data-device-mode="mobile"] .pile-zone { padding-top: 31px; }
-  html[data-device-mode="mobile"] .pile-zone .solitaire-pile { --card-h: clamp(100px, 28dvh, 120px); }
+  html[data-device-mode="mobile"] .pile-zone .solitaire-pile { --card-h: 74px; }
 }
