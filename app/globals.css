@@ -7103,6 +7103,25 @@ html[data-device-mode="mobile"] .deck-editor-footer .confirm { min-height: 32px;
     width: 74px;
     height: 74px;
   }
+  html[data-device-mode="mobile"] .battlefield .player-zone .hand .game-card.deck-editor-card.is-keyboard-selected {
+    overflow: visible;
+  }
+  html[data-device-mode="mobile"] .battlefield .player-zone .hand .mobile-hand-card-detail {
+    position: absolute;
+    z-index: 80;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    width: 120px;
+    height: 170px;
+    pointer-events: none;
+    transform: translateX(-50%);
+  }
+  html[data-device-mode="mobile"] .battlefield .player-zone .hand .mobile-hand-card-detail .card-face {
+    --card-w: 120px;
+    --card-h: 170px;
+    width: 100%;
+    height: 100%;
+  }
   html[data-device-mode="mobile"] .battlefield .stacked-card.deck-editor-card {
     position: absolute;
     width: var(--card-w);

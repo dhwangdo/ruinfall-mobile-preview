@@ -144,6 +144,20 @@ export function BattleHandArea({
   }, [onClearCardHover]);
 
   useEffect(() => {
+    if (!mobileLayout || selectedHandCardId === null) return;
+    const clearSelectionOnBlankPress = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (target.closest(".game-card, button, input, select, textarea")) return;
+      setSelectedHandCardId(null);
+      setHoveredHandCardId(null);
+      onClearCardHover();
+    };
+    window.addEventListener("pointerdown", clearSelectionOnBlankPress, true);
+    return () => window.removeEventListener("pointerdown", clearSelectionOnBlankPress, true);
+  }, [mobileLayout, onClearCardHover, selectedHandCardId, setHoveredHandCardId, setSelectedHandCardId]);
+
+  useEffect(() => {
     const hand = handRef.current;
     if (!hand) return;
     const updateMetrics = () => {
@@ -430,7 +444,25 @@ export function BattleHandArea({
               aria-label={UNPLAYABLE_CARD_EFFECTS.has(card.effect) ? `${card.name}, 비용 -, 사용 불가` : `${card.name}, 에너지 ${cardEnergyCost(card, lawResearchCount, game.forgeCount)}`}
             >
               {mobileLayout ? (
-                <DeckEditorCardIcon card={card} />
+                <>
+                  <DeckEditorCardIcon card={card} />
+                  {selectedHandCardId === card.id && (
+                    <span className="mobile-hand-card-detail" aria-hidden="true">
+                      <span className={`card-face ${card.kind} ${card.damageType}`}>
+                        <CardFace
+                          card={card}
+                          starsSpent={game.starsSpent}
+                          strength={game.strength + combatManualBonus + backToBasicsBonus(card)}
+                          agility={game.agility + combatManualBonus + backToBasicsBonus(card)}
+                          defenseMultiplier={game.defenseMultiplier}
+                          ruleCostReduction={lawResearchCount}
+                          forgeCount={game.forgeCount}
+                          radiancePlayedThisTurn={game.radiancePlayedThisTurn}
+                        />
+                      </span>
+                    </span>
+                  )}
+                </>
               ) : (
                 <CardFace
                   card={card}
