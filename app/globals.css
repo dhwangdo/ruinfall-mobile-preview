@@ -6673,6 +6673,8 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
     user-select: none;
     -webkit-user-select: none;
   }
+  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card,
+  html[data-device-mode="mobile"] .deck-editor-panel .consumable-ticket { touch-action: none !important; }
   html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card .editor-card-name,
   html[data-device-mode="mobile"] .deck-editor-panel .consumable-ticket > strong { font-size: 8px; }
   html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card .editor-card-cost { font-size: 13px; }

@@ -29,6 +29,13 @@ type TouchDragCandidate = {
   source: DeckEditorArea | ConsumableArea;
   deckId?: string;
   virtualKey?: string;
+  pointerType: string;
+  startedAt: number;
+  lastX: number;
+  lastY: number;
+  scrolling: boolean;
+  sourceList: HTMLElement | null;
+  sectionScroller: HTMLElement | null;
   startX: number;
   startY: number;
   active: boolean;
@@ -611,7 +618,9 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
     deckId?: string,
     virtualKey?: string,
   ) => {
-    if (event.pointerType !== "touch" || event.button !== 0) return;
+    const isMobileMode = document.documentElement.dataset.deviceMode === "mobile";
+    if ((!isMobileMode && event.pointerType !== "touch") || event.button !== 0) return;
+    if (isMobileMode) event.currentTarget.draggable = false;
     touchDragRef.current = {
       pointerId: event.pointerId,
       kind,
@@ -619,6 +628,13 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
       source,
       deckId,
       virtualKey,
+      pointerType: event.pointerType,
+      startedAt: event.timeStamp,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      scrolling: false,
+      sourceList: event.currentTarget.closest<HTMLElement>(".deck-editor-card-list, .deck-editor-deck-list, .deck-editor-floor-cards"),
+      sectionScroller: event.currentTarget.closest<HTMLElement>(".deck-editor-columns"),
       startX: event.clientX,
       startY: event.clientY,
       active: false,
@@ -719,11 +735,32 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
       if (!candidate.active) {
         const dx = event.clientX - candidate.startX;
         const dy = event.clientY - candidate.startY;
-        if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
-          touchDragRef.current = null;
+        if (candidate.pointerType === "touch" && candidate.scrolling) {
+          const moveX = event.clientX - candidate.lastX;
+          const moveY = event.clientY - candidate.lastY;
+          if (Math.abs(moveX) >= Math.abs(moveY) && candidate.sourceList) {
+            candidate.sourceList.scrollLeft -= moveX;
+          } else if (candidate.sectionScroller) {
+            candidate.sectionScroller.scrollTop -= moveY;
+          }
+          candidate.lastX = event.clientX;
+          candidate.lastY = event.clientY;
+          event.preventDefault();
           return;
         }
-        if (Math.abs(dy) < 12 || Math.abs(dy) <= Math.abs(dx)) return;
+        if (Math.hypot(dx, dy) < 12) return;
+        if (candidate.pointerType === "touch" && event.timeStamp - candidate.startedAt < 180) {
+          candidate.scrolling = true;
+          candidate.lastX = event.clientX;
+          candidate.lastY = event.clientY;
+          if (Math.abs(dx) >= Math.abs(dy) && candidate.sourceList) {
+            candidate.sourceList.scrollLeft -= dx;
+          } else if (candidate.sectionScroller) {
+            candidate.sectionScroller.scrollTop -= dy;
+          }
+          event.preventDefault();
+          return;
+        }
         candidate.active = true;
         setTouchDrag({ ...candidate });
         if (candidate.kind === "card") {
@@ -800,6 +837,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
     consumablePreview,
     finishConsumableDrag,
     finishDeckEditorDrag,
+    finishTouchDrop,
     floorCardGroups,
     inventoryCardGroups,
     moveFloorConsumableToInventory,
@@ -1263,7 +1301,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
                     <span className="deck-editor-mobile-selection" aria-live="polite">
                       {touchDrag?.active
                         ? "놓을 곳에 손가락을 떼세요"
-                        : "카드를 끌어 인벤토리·덱·바닥 사이로 옮기세요"}
+                        : "카드를 길게 눌러 끌기 · 짧게 밀어 목록 이동"}
                     </span>
                   </div>
                   <div className="deck-editor-footer-actions">
