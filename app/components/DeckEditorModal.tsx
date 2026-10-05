@@ -21,6 +21,7 @@ type DeckEditorArea = DeckEditorCardArea;
 type ConsumableArea = "inventory" | "floor";
 type ConsumableDrag = { id: string; source: ConsumableArea; virtualKey?: string } | null;
 type CardDrag = { cardId: number; source: DeckEditorArea; deckId?: string; virtualKey?: string } | null;
+type MobileSelectedCard = { cardId: number; area: "inventory" | "deck" | "floor"; deckId?: string };
 type DeckDrag = { deckId: string; source: "floor" | "owned"; virtualKey?: string } | null;
 type DeckEditorDragKind = "card" | "consumable";
 type CardGroup = DeckEditorCardGroup & { pendingRemoval?: boolean };
@@ -221,7 +222,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
   const deckCaseDragRef = useRef<DeckDrag>(null);
   const [deckCaseDropSlot, setDeckCaseDropSlot] = useState<number | null>(null);
   const [ticketDropTarget, setTicketDropTarget] = useState<string | null>(null);
-  const [mobileSelectedDeckCard, setMobileSelectedDeckCard] = useState<{ cardId: number; deckId: string } | null>(null);
+  const [mobileSelectedCard, setMobileSelectedCard] = useState<MobileSelectedCard | null>(null);
   const [mobileEditorSection, setMobileEditorSection] = useState<"inventory" | "decks" | "floor">("decks");
   const previewReleaseTimerRef = useRef<number | null>(null);
   const activityCallbackRef = useRef(onEditorDragActivityChange);
@@ -278,24 +279,44 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
   }, [ownedDecks, deckEditorSort, transformedCardNewIds, rareSlotCountForDeck]);
 
   const selectedInventoryTicket = inventoryConsumableGroups.find(({ consumable }) => isConsumableSelected(consumable));
-  const selectedDeckCard = mobileSelectedDeckCard
-    ? ownedDecks.find(({ id }) => id === mobileSelectedDeckCard.deckId)?.cards.find(({ id }) => id === mobileSelectedDeckCard.cardId)
+  const selectedMobileCard = mobileSelectedCard
+    ? mobileSelectedCard.area === "deck"
+      ? ownedDecks.find(({ id }) => id === mobileSelectedCard.deckId)?.cards.find(({ id }) => id === mobileSelectedCard.cardId)
+      : (mobileSelectedCard.area === "inventory" ? inventoryCardGroups : floorCardGroups)
+        .find(({ cardIds }) => cardIds.includes(mobileSelectedCard.cardId))?.card
     : undefined;
 
-  const moveSelectedDeckCardToInventory = () => {
-    if (!mobileSelectedDeckCard) return;
-    const deck = ownedDecks.find(({ id }) => id === mobileSelectedDeckCard.deckId);
-    const card = deck?.cards.find(({ id }) => id === mobileSelectedDeckCard.cardId);
-    if (!deck || !card || usesRareCardSlot(card)) return;
-    const target = canMoveDeckCardToInventory && deckEditorInventoryItemCount < inventoryCapacity
-      ? { area: "inventory" as const }
-      : { area: "floor" as const };
+  const moveSelectedMobileCard = (targetArea: "inventory" | "deck" | "floor") => {
+    if (!mobileSelectedCard || !selectedMobileCard || (targetArea === "deck" && !editingDeck)) return;
+    const sourceArea = mobileSelectedCard.area;
+    if (sourceArea === targetArea || (targetArea === "deck" && sourceArea === "deck")) return;
+    if (sourceArea === "deck" && !mobileSelectedCard.deckId) return;
+    if (sourceArea === "deck" && usesRareCardSlot(selectedMobileCard)) return;
     onMoveCard({
-      cardId: mobileSelectedDeckCard.cardId,
-      source: { area: "deck", deckId: deck.id },
-      target,
+      cardId: mobileSelectedCard.cardId,
+      source: sourceArea === "deck"
+        ? { area: "deck", deckId: mobileSelectedCard.deckId }
+        : { area: sourceArea },
+      target: targetArea === "deck"
+        ? { area: "deck", deckId: editingDeck!.id }
+        : { area: targetArea },
     });
-    setMobileSelectedDeckCard(null);
+    setMobileSelectedCard(null);
+    setMobileEditorSection(targetArea === "deck" ? "decks" : targetArea);
+  };
+
+  const moveSelectedDeckCardOut = () => {
+    if (mobileSelectedCard?.area !== "deck" || !mobileSelectedCard.deckId || !selectedMobileCard || usesRareCardSlot(selectedMobileCard)) return;
+    const targetArea = canMoveDeckCardToInventory && deckEditorInventoryItemCount < inventoryCapacity
+      ? "inventory"
+      : "floor";
+    onMoveCard({
+      cardId: mobileSelectedCard.cardId,
+      source: { area: "deck", deckId: mobileSelectedCard.deckId },
+      target: { area: targetArea },
+    });
+    setMobileSelectedCard(null);
+    setMobileEditorSection(targetArea);
   };
 
   const moveSelectedInventoryTicketToFloor = () => {
@@ -390,7 +411,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
     return (
       <button
         type="button"
-        className={`deck-editor-card deck-list-entry rarity-${card.rarity} ${card.rarity === "legendary" ? "is-painted" : ""} ${isTemporary ? `is-temporary ${pendingRemovalBlinkDim ? "is-blink-dim" : ""}` : ""} ${ticketDropTarget === ticketDropKey("deck", cardId, deck.id) ? "is-ticket-drop-target" : ""} ${mobileSelectedDeckCard?.cardId === cardId && mobileSelectedDeckCard.deckId === deck.id ? "is-mobile-action-selected" : ""}`}
+        className={`deck-editor-card deck-list-entry rarity-${card.rarity} ${card.rarity === "legendary" ? "is-painted" : ""} ${isTemporary ? `is-temporary ${pendingRemovalBlinkDim ? "is-blink-dim" : ""}` : ""} ${ticketDropTarget === ticketDropKey("deck", cardId, deck.id) ? "is-ticket-drop-target" : ""} ${mobileSelectedCard?.cardId === cardId && mobileSelectedCard.area === "deck" && mobileSelectedCard.deckId === deck.id ? "is-mobile-action-selected" : ""}`}
         key={item.key}
         style={deckEditorCardStackStyle(cardIds.length)}
         draggable
@@ -406,9 +427,9 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
           setDeckEditorDeckId(deck.id);
           const ticketApplied = applySelectedCardTicket(card, "deck", deck.id, cardId);
           if (!ticketApplied && document.documentElement.dataset.deviceMode === "mobile") {
-            setMobileSelectedDeckCard({ cardId, deckId: deck.id });
+            setMobileSelectedCard({ cardId, area: "deck", deckId: deck.id });
           } else {
-            setMobileSelectedDeckCard(null);
+            setMobileSelectedCard(null);
           }
         }}
         onContextMenu={(event) => {
@@ -646,6 +667,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
         }}
         onBlur={consumablePreview.clear}
         onClick={() => {
+          setMobileSelectedCard(null);
           if (area === "inventory" || ["paintTicket", "cloneTicket", "extractTicket", "extractPlusTicket", "transformTicket", "bombTicket", "darkTicket"].includes(consumable.type)) {
             selectExtractionTicket(consumable);
           } else {
@@ -712,7 +734,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
     return (
       <button
         type="button"
-        className={`deck-editor-card rarity-${card.rarity} ${card.rarity === "legendary" ? "is-painted" : ""} ${deckEditorDrag?.cardId === cardId ? "is-dragging" : ""} ${ticketDropTarget === location ? "is-ticket-drop-target" : ""}`}
+        className={`deck-editor-card rarity-${card.rarity} ${card.rarity === "legendary" ? "is-painted" : ""} ${deckEditorDrag?.cardId === cardId ? "is-dragging" : ""} ${ticketDropTarget === location ? "is-ticket-drop-target" : ""} ${mobileSelectedCard?.cardId === cardId && mobileSelectedCard.area === area ? "is-mobile-action-selected" : ""}`}
         key={item.key}
         style={deckEditorCardStackStyle(cardIds.length)}
         draggable
@@ -731,13 +753,15 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
         onBlur={clearCardPreview}
         onClick={() => {
           if (area === "inventory") {
-            if (!applySelectedCardTicket(card, "inventory", undefined, cardId)) onMoveCard({
-              cardId,
-              source: { area: "inventory" },
-              target: { area: "deck", deckId: editingDeck?.id },
-            });
-          } else if (!applySelectedCardTicket(card, "floor", undefined, cardId)) {
-            onMoveCard({ cardId, source: { area: "floor" }, target: { area: "inventory" } });
+            const ticketApplied = applySelectedCardTicket(card, "inventory", undefined, cardId);
+            if (ticketApplied) setMobileSelectedCard(null);
+            else if (document.documentElement.dataset.deviceMode === "mobile") setMobileSelectedCard({ cardId, area: "inventory" });
+            else onMoveCard({ cardId, source: { area: "inventory" }, target: { area: "deck", deckId: editingDeck?.id } });
+          } else {
+            const ticketApplied = applySelectedCardTicket(card, "floor", undefined, cardId);
+            if (ticketApplied) setMobileSelectedCard(null);
+            else if (document.documentElement.dataset.deviceMode === "mobile") setMobileSelectedCard({ cardId, area: "floor" });
+            else onMoveCard({ cardId, source: { area: "floor" }, target: { area: "inventory" } });
           }
         }}
         onContextMenu={area === "inventory" ? (event) => {
@@ -745,8 +769,8 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
           onMoveCard({ cardId, source: { area: "inventory" }, target: { area: "floor" } });
         } : undefined}
         aria-label={area === "inventory"
-          ? `${card.name}, 좌클릭하면 선택한 덱으로 이동, 우클릭하면 바닥으로 이동`
-          : `${card.name}, 인벤토리에 줍기`}
+          ? `${card.name}, 눌러 선택한 뒤 덱 또는 바닥으로 이동`
+          : `${card.name}, 눌러 선택한 뒤 이동`}
       >
         <DeckEditorCardIcon card={card} count={cardIds.length} showNewBadge={cardIds.some((id) => transformedCardNewIds.has(id))} />
       </button>
@@ -1076,15 +1100,36 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
                 </div>
               </section>
 
-                <footer className="deck-editor-footer">
+              <footer className="deck-editor-footer">
                   <div className="deck-editor-mobile-actions">
-                    <button
-                      type="button"
-                      onClick={moveSelectedDeckCardToInventory}
-                      disabled={!selectedDeckCard || usesRareCardSlot(selectedDeckCard)}
-                    >선택 카드 빼기</button>
+                    <span className="deck-editor-mobile-selection" aria-live="polite">
+                      {selectedMobileCard
+                        ? `선택: ${selectedMobileCard.name}`
+                        : selectedInventoryTicket
+                          ? `티켓 선택: ${selectedInventoryTicket.consumable.name}`
+                          : "카드를 눌러 선택하세요"}
+                    </span>
+                    {mobileSelectedCard?.area === "inventory" && (
+                      <>
+                        <button type="button" onClick={() => moveSelectedMobileCard("deck")} disabled={!editingDeck}>덱에 넣기</button>
+                        <button type="button" onClick={() => moveSelectedMobileCard("floor")}>바닥에 놓기</button>
+                      </>
+                    )}
+                    {mobileSelectedCard?.area === "floor" && (
+                      <>
+                        <button type="button" onClick={() => moveSelectedMobileCard("inventory")}>인벤토리에 줍기</button>
+                        <button type="button" onClick={() => moveSelectedMobileCard("deck")} disabled={!editingDeck}>덱에 넣기</button>
+                      </>
+                    )}
+                    {mobileSelectedCard?.area === "deck" && (
+                      <button
+                        type="button"
+                        onClick={moveSelectedDeckCardOut}
+                        disabled={!selectedMobileCard || usesRareCardSlot(selectedMobileCard)}
+                      >덱에서 빼기</button>
+                    )}
                     {selectedInventoryTicket && (
-                      <button type="button" onClick={moveSelectedInventoryTicketToFloor}>선택 티켓 바닥에 놓기</button>
+                      <button type="button" onClick={moveSelectedInventoryTicketToFloor}>티켓 바닥에 놓기</button>
                     )}
                   </div>
                   <div className="deck-editor-footer-actions">

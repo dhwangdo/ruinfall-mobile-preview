@@ -6294,7 +6294,7 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
   }
   html[data-device-mode="mobile"] .deck-editor-panel {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: 40px 40px auto minmax(0, 1fr) 38px;
+    grid-template-rows: 40px 40px auto minmax(0, 1fr) 48px;
     min-width: 0;
     overflow: hidden;
   }
@@ -6500,19 +6500,48 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
   html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card,
   html[data-device-mode="mobile"] .deck-editor-panel .consumable-ticket,
   html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-empty-card-slot {
-    flex-basis: 76px;
-    width: 76px;
-    height: 78px;
-    min-height: 78px;
+    flex-basis: 60px;
+    width: 60px;
+    height: 62px;
+    min-height: 62px;
   }
   html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card .editor-card-name,
-  html[data-device-mode="mobile"] .deck-editor-panel .consumable-ticket > strong { font-size: 10px; }
-  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card .editor-card-cost { font-size: 15px; }
+  html[data-device-mode="mobile"] .deck-editor-panel .consumable-ticket > strong { font-size: 9px; }
+  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card .editor-card-cost { font-size: 14px; }
+  html[data-device-mode="mobile"] .deck-editor-deck-list,
+  html[data-device-mode="mobile"] .deck-editor-card-list,
+  html[data-device-mode="mobile"] .deck-editor-floor-cards { gap: 5px; }
   html[data-device-mode="mobile"] .deck-editor-footer {
     grid-column: 1;
     grid-row: 5;
     min-width: 0;
     padding: 3px 6px;
   }
+  html[data-device-mode="mobile"] .deck-editor-mobile-actions {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  html[data-device-mode="mobile"] .deck-editor-mobile-selection {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    color: #e7ece7;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  html[data-device-mode="mobile"] .deck-editor-mobile-actions button,
+  html[data-device-mode="mobile"] .deck-editor-footer .confirm {
+    flex: 0 0 auto;
+    min-height: 32px;
+    padding: 4px 8px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  html[data-device-mode="mobile"] .deck-editor-mobile-actions button:disabled { opacity: .45; }
   html[data-device-mode="mobile"] .deck-editor-footer-actions { width: auto; }
 }
