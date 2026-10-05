@@ -89,7 +89,7 @@ export function BattleHandArea({
   const mobileLayout = useSyncExternalStore(subscribeDeviceMode, getMobileDeviceMode, getServerDeviceMode);
   const [windowStart, setWindowStart] = useState(0);
   const handArcRadius = mobileLayout ? 900 : HAND_ARC_RADIUS;
-  const handAngleStep = mobileLayout ? 1.5 : HAND_ANGLE_STEP;
+  const handAngleStep = mobileLayout ? 1.8 : HAND_ANGLE_STEP;
   const handCardStep = mobileLayout ? 70 : HAND_CARD_STEP;
   const fittingCardCount = [9, 7, 5, 3, 1].find((count) => {
     const angle = (count - 1) / 2 * handAngleStep * Math.PI / 180;
@@ -409,7 +409,7 @@ export function BattleHandArea({
         >
           {displayedHand.map((card, index) => card ? (
             <button
-              className={`game-card ${mobileLayout ? `deck-editor-card rarity-${card.rarity}` : "card-face"} ${card.kind} ${card.damageType} ${HAND_PASSIVE_EFFECTS.has(card.effect) ? "has-hand-aura" : card.effect === "slime" ? "has-danger-aura is-toxic-slime" : ""} ${dragging?.card.id === card.id ? "is-dragging" : ""} ${hoveredHandCardId === card.id ? "is-pointer-hovered" : ""} ${selectedHandCardId === card.id ? "is-keyboard-selected" : ""} ${index < clampedWindowStart || index >= clampedWindowStart + visibleCardCount ? "is-outside-window" : ""}`}
+              className={`game-card ${mobileLayout ? `deck-editor-card rarity-${card.rarity}` : "card-face"} ${card.kind} ${card.damageType} ${HAND_PASSIVE_EFFECTS.has(card.effect) ? "has-hand-aura" : card.effect === "slime" ? "has-danger-aura is-toxic-slime" : ""} ${dragging?.card.id === card.id ? "is-dragging" : ""} ${hoveredHandCardId === card.id && (!mobileLayout || selectedHandCardId === null) ? "is-pointer-hovered" : ""} ${selectedHandCardId === card.id ? "is-keyboard-selected" : ""} ${index < clampedWindowStart || index >= clampedWindowStart + visibleCardCount ? "is-outside-window" : ""}`}
               key={card.id}
               data-card-id={card.id}
               ref={(element) => {
@@ -422,6 +422,8 @@ export function BattleHandArea({
               onPointerDown={(event) => {
                 if (handCardAtPointer(event.clientX, event.clientY) !== card.id) return;
                 setSelectedHandCardId(null);
+                setHoveredHandCardId(null);
+                onClearCardHover();
                 dragHandlers.beginDrag(event, card, { type: "hand" });
               }}
               onPointerMove={dragHandlers.moveDrag}
@@ -434,6 +436,8 @@ export function BattleHandArea({
                   return;
                 }
                 if (mobileLayout && phase === "playing" && game.status === "playing" && !controlsLocked) {
+                  setHoveredHandCardId(null);
+                  onClearCardHover();
                   setSelectedHandCardId(card.id);
                 }
               }}
@@ -444,25 +448,7 @@ export function BattleHandArea({
               aria-label={UNPLAYABLE_CARD_EFFECTS.has(card.effect) ? `${card.name}, 비용 -, 사용 불가` : `${card.name}, 에너지 ${cardEnergyCost(card, lawResearchCount, game.forgeCount)}`}
             >
               {mobileLayout ? (
-                <>
-                  <DeckEditorCardIcon card={card} />
-                  {selectedHandCardId === card.id && (
-                    <span className="mobile-hand-card-detail" aria-hidden="true">
-                      <span className={`card-face ${card.kind} ${card.damageType}`}>
-                        <CardFace
-                          card={card}
-                          starsSpent={game.starsSpent}
-                          strength={game.strength + combatManualBonus + backToBasicsBonus(card)}
-                          agility={game.agility + combatManualBonus + backToBasicsBonus(card)}
-                          defenseMultiplier={game.defenseMultiplier}
-                          ruleCostReduction={lawResearchCount}
-                          forgeCount={game.forgeCount}
-                          radiancePlayedThisTurn={game.radiancePlayedThisTurn}
-                        />
-                      </span>
-                    </span>
-                  )}
-                </>
+                <DeckEditorCardIcon card={card} />
               ) : (
                 <CardFace
                   card={card}
@@ -478,6 +464,22 @@ export function BattleHandArea({
             </button>
           ) : <div className={`hand-card-placeholder ${index < clampedWindowStart || index >= clampedWindowStart + visibleCardCount ? "is-outside-window" : ""}`} aria-hidden="true" key={`clear-slot-${index}`} style={handFanStyle(index)} />)}
         </div>
+        {mobileLayout && selectedHandCard && (
+          <div className="mobile-hand-card-detail" aria-hidden="true">
+            <span className={`card-face ${selectedHandCard.kind} ${selectedHandCard.damageType}`}>
+              <CardFace
+                card={selectedHandCard}
+                starsSpent={game.starsSpent}
+                strength={game.strength + combatManualBonus + backToBasicsBonus(selectedHandCard)}
+                agility={game.agility + combatManualBonus + backToBasicsBonus(selectedHandCard)}
+                defenseMultiplier={game.defenseMultiplier}
+                ruleCostReduction={lawResearchCount}
+                forgeCount={game.forgeCount}
+                radiancePlayedThisTurn={game.radiancePlayedThisTurn}
+              />
+            </span>
+          </div>
+        )}
         {leftHiddenCount > 0 && (
           <div className="hand-overflow-card is-left" role="status" aria-label={`왼쪽에 카드 ${leftHiddenCount}장 더 있음`}>
             <span aria-hidden="true">+{leftHiddenCount}</span>
