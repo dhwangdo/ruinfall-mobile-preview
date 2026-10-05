@@ -45,7 +45,19 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(()=>{try{const root=document.documentElement;const forced=new URLSearchParams(location.search).get("device");const ua=navigator.userAgent||"";const mobile=navigator.userAgentData?.mobile??/(Android.*Mobile|iPhone|iPad|iPod|IEMobile|Windows Phone|Opera Mini)/i.test(ua);root.dataset.deviceMode=forced==="mobile"||forced!=="desktop"&&mobile?"mobile":"desktop"}catch{document.documentElement.dataset.deviceMode="desktop"}})();`,
+            __html: `(()=>{try{
+              const root=document.documentElement;
+              const syncViewport=()=>root.style.setProperty("--mobile-visual-viewport-height",(window.visualViewport?.height??window.innerHeight)+"px");
+              syncViewport();
+              window.addEventListener("resize",syncViewport,{passive:true});
+              window.addEventListener("orientationchange",syncViewport,{passive:true});
+              window.visualViewport?.addEventListener("resize",syncViewport,{passive:true});
+              window.visualViewport?.addEventListener("scroll",syncViewport,{passive:true});
+              const forced=new URLSearchParams(location.search).get("device");
+              const ua=navigator.userAgent||"";
+              const mobile=navigator.userAgentData?.mobile??/(Android.*Mobile|iPhone|iPad|iPod|IEMobile|Windows Phone|Opera Mini)/i.test(ua);
+              root.dataset.deviceMode=forced==="mobile"||forced!=="desktop"&&mobile?"mobile":"desktop"
+            }catch{document.documentElement.dataset.deviceMode="desktop"}})();`,
           }}
         />
       </head>

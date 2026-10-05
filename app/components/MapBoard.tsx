@@ -242,7 +242,6 @@ export function MapBoard({
         onPointerMove={moveMapDrag}
         onPointerUp={finishMapDrag}
         onPointerCancel={finishMapDrag}
-        onPointerLeave={finishMapDrag}
         onWheel={zoomMap}
       >
         <div
@@ -364,10 +363,6 @@ export function MapBoard({
             }}
           >➤</button>
         )}
-        <div className="mobile-map-zoom-controls" aria-label="지도 확대 및 축소">
-          <button type="button" aria-label="지도 축소" onClick={() => camera.changeZoom(-1)}>−</button>
-          <button type="button" aria-label="지도 확대" onClick={() => camera.changeZoom(1)}>+</button>
-        </div>
       </div>
       {children}
     </section>

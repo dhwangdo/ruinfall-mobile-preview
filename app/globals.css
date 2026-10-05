@@ -6031,13 +6031,14 @@ h1 { margin: 0; font-size: 25px; font-weight: 600; }
 
 /* Mobile mode is selected before paint in app/layout.tsx; desktop keeps existing rules. */
 .mobile-landscape-notice { display: none; }
-.mobile-map-zoom-controls { display: none; }
+html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
 
 @media (orientation: portrait) {
   html[data-device-mode="mobile"] .mobile-landscape-notice {
     position: fixed;
     z-index: 10000;
-    inset: 0;
+    inset: 0 0 auto;
+    height: var(--mobile-visual-viewport-height, 100dvh);
     display: grid;
     place-items: center;
     padding: 24px;
@@ -6058,11 +6059,15 @@ h1 { margin: 0; font-size: 25px; font-weight: 600; }
 }
 
 @media (orientation: landscape) {
-  html[data-device-mode="mobile"] body { width: 100vw; height: 100dvh; overflow: hidden; }
+  html[data-device-mode="mobile"] body {
+    width: 100vw;
+    height: var(--mobile-visual-viewport-height, 100dvh);
+    overflow: hidden;
+  }
   html[data-device-mode="mobile"] .game-shell,
   html[data-device-mode="mobile"] .game-shell:not(.map-shell) {
     width: 100vw;
-    height: 100dvh;
+    height: var(--mobile-visual-viewport-height, 100dvh);
     min-height: 0;
     margin: 0;
     padding: 3px;
@@ -6086,25 +6091,6 @@ h1 { margin: 0; font-size: 25px; font-weight: 600; }
     height: auto;
     min-height: 0;
     margin: 0;
-  }
-  html[data-device-mode="mobile"] .mobile-map-zoom-controls {
-    position: absolute;
-    z-index: 14;
-    left: 8px;
-    bottom: 8px;
-    display: grid;
-    gap: 5px;
-  }
-  html[data-device-mode="mobile"] .mobile-map-zoom-controls button {
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    border: 1px solid rgba(255,255,255,.55);
-    border-radius: 7px;
-    color: #fff;
-    background: rgba(16,34,26,.86);
-    font-size: 24px;
-    line-height: 1;
   }
   html[data-device-mode="mobile"] .game-shell.map-shell button,
   html[data-device-mode="mobile"] .battlefield button { touch-action: manipulation; }
@@ -6266,6 +6252,27 @@ h1 { margin: 0; font-size: 25px; font-weight: 600; }
   html[data-device-mode="mobile"] .deck-editor-footer .confirm { min-height: 29px; padding: 3px 8px; font-size: 10px; }
   html[data-device-mode="mobile"] .deck-editor-footer-actions { margin-left: auto; }
   html[data-device-mode="mobile"] .deck-editor-card.is-mobile-action-selected { outline: 2px solid #fff0a8; outline-offset: 1px; }
+}
+
+@media (orientation: landscape) {
+  html[data-device-mode="mobile"] .battle-deck-check-overlay {
+    inset: 0 0 auto;
+    height: var(--mobile-visual-viewport-height, 100dvh);
+    padding: max(6px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right))
+      max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  html[data-device-mode="mobile"] .battle-deck-check-panel {
+    max-height: calc(var(--mobile-visual-viewport-height, 100dvh) - 12px);
+    overflow-y: auto;
+    padding: clamp(10px, 2.5dvh, 16px) clamp(12px, 2vw, 20px);
+  }
+  html[data-device-mode="mobile"] .battle-deck-check-options { gap: 6px; margin-top: 10px; }
+  html[data-device-mode="mobile"] .battle-deck-check-composition { margin-top: 10px; padding-top: 8px; }
+  html[data-device-mode="mobile"] .battle-deck-check-composition h3 { margin-bottom: 6px; }
+  html[data-device-mode="mobile"] .battle-deck-check-cards { max-height: min(120px, 28dvh); }
+  html[data-device-mode="mobile"] .battle-deck-check-confirm { margin-top: 10px; }
 }
 
 .mobile-hand-actions,

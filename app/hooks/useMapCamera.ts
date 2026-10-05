@@ -30,11 +30,19 @@ type MapCameraOptions = {
 };
 
 type MapDrag = {
+  pointerId: number;
   startX: number;
   startY: number;
   originX: number;
   originY: number;
   moved: boolean;
+};
+
+type MapPinch = {
+  initialDistance: number;
+  initialZoom: number;
+  mapX: number;
+  mapY: number;
 };
 
 export function useMapCamera({ enabled, position, travelLocked }: MapCameraOptions) {
@@ -46,6 +54,9 @@ export function useMapCamera({ enabled, position, travelLocked }: MapCameraOptio
   const focusTimerRef = useRef<number | null>(null);
   const dragRef = useRef<MapDrag | null>(null);
   const wasDraggedRef = useRef(false);
+  const touchPointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<MapPinch | null>(null);
+  const pinchOccurredRef = useRef(false);
 
   useLayoutEffect(() => {
     if (!enabled) return;
@@ -165,21 +176,77 @@ export function useMapCamera({ enabled, position, travelLocked }: MapCameraOptio
     });
   }, [zoomAt]);
 
+  const startPinch = useCallback((viewport: HTMLDivElement) => {
+    const [first, second] = Array.from(touchPointersRef.current.values()).slice(0, 2);
+    if (!first || !second) return;
+    const bounds = viewport.getBoundingClientRect();
+    const centerX = (first.x + second.x) / 2 - bounds.left;
+    const centerY = (first.y + second.y) / 2 - bounds.top;
+    const distance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
+    pinchRef.current = {
+      initialDistance: distance,
+      initialZoom: zoom,
+      mapX: (centerX - pan.x) / zoom,
+      mapY: (centerY - pan.y) / zoom,
+    };
+    pinchOccurredRef.current = true;
+  }, [pan.x, pan.y, zoom]);
+
   const beginDrag = useCallback((event: PointerEvent<HTMLDivElement>) => {
-    if (event.button !== 0 || travelLocked) return;
+    if (travelLocked || (event.pointerType !== "touch" && event.button !== 0)) return;
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture may be unavailable in older mobile browsers.
+    }
     wasDraggedRef.current = false;
+
+    if (event.pointerType === "touch") {
+      touchPointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (touchPointersRef.current.size >= 2) {
+        dragRef.current = null;
+        wasDraggedRef.current = true;
+        if (!pinchRef.current) startPinch(event.currentTarget);
+        return;
+      }
+    }
+
     dragRef.current = {
+      pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       originX: pan.x,
       originY: pan.y,
       moved: false,
     };
-  }, [pan.x, pan.y, travelLocked]);
+  }, [pan.x, pan.y, startPinch, travelLocked]);
 
   const moveDrag = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (touchPointersRef.current.has(event.pointerId)) {
+      touchPointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (touchPointersRef.current.size >= 2) {
+        if (!pinchRef.current) startPinch(event.currentTarget);
+        const pinch = pinchRef.current;
+        const [first, second] = Array.from(touchPointersRef.current.values()).slice(0, 2);
+        if (!pinch || !first || !second) return;
+
+        const bounds = event.currentTarget.getBoundingClientRect();
+        const centerX = (first.x + second.x) / 2 - bounds.left;
+        const centerY = (first.y + second.y) / 2 - bounds.top;
+        const distance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
+        const nextZoom = Math.min(
+          MAP_MAX_ZOOM,
+          Math.max(MAP_MIN_ZOOM, pinch.initialZoom * distance / pinch.initialDistance),
+        );
+        setZoom(nextZoom);
+        setPan({ x: centerX - pinch.mapX * nextZoom, y: centerY - pinch.mapY * nextZoom });
+        wasDraggedRef.current = true;
+        return;
+      }
+    }
+
     const drag = dragRef.current;
-    if (!drag) return;
+    if (!drag || drag.pointerId !== event.pointerId) return;
     const offsetX = event.clientX - drag.startX;
     const offsetY = event.clientY - drag.startY;
     const moved = drag.moved || Math.hypot(offsetX, offsetY) > 6;
@@ -189,10 +256,31 @@ export function useMapCamera({ enabled, position, travelLocked }: MapCameraOptio
       x: drag.originX + offsetX,
       y: drag.originY + offsetY,
     });
-  }, []);
+  }, [startPinch]);
 
-  const finishDrag = useCallback(() => {
-    dragRef.current = null;
+  const finishDrag = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "touch") {
+      touchPointersRef.current.delete(event.pointerId);
+      dragRef.current = null;
+      pinchRef.current = null;
+      if (touchPointersRef.current.size === 0 && pinchOccurredRef.current) {
+        wasDraggedRef.current = true;
+        window.setTimeout(() => {
+          wasDraggedRef.current = false;
+          pinchOccurredRef.current = false;
+        }, 0);
+      }
+    } else if (dragRef.current?.pointerId === event.pointerId) {
+      dragRef.current = null;
+    }
+
+    try {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    } catch {
+      // The browser may release capture before dispatching pointercancel.
+    }
   }, []);
 
   return {
