@@ -6480,7 +6480,7 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
     align-items: flex-start;
     overflow-x: auto;
     overflow-y: hidden;
-    touch-action: pan-x;
+    touch-action: pan-x !important;
     scrollbar-width: none;
   }
   html[data-device-mode="mobile"] .deck-editor-mobile-decks,
@@ -6602,7 +6602,7 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
     border: 0;
     border-right: 1px solid #34463a;
     background: #1a2920;
-    touch-action: pan-y;
+    touch-action: pan-y !important;
   }
   html[data-device-mode="mobile"] .deck-editor-column-title h3,
   html[data-device-mode="mobile"] .deck-editor-deck-heading > span,
@@ -6644,7 +6644,7 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
     padding: 4px;
     overflow-x: auto;
     overflow-y: hidden;
-    touch-action: pan-x;
+    touch-action: pan-x !important;
     scrollbar-width: none;
   }
   html[data-device-mode="mobile"] .deck-editor-card-list::-webkit-scrollbar,
@@ -6669,7 +6669,7 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
     width: 54px;
     height: 58px;
     min-height: 58px;
-    touch-action: pan-x;
+    touch-action: pan-x !important;
     user-select: none;
     -webkit-user-select: none;
   }
