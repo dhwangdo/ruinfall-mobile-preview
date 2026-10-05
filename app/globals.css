@@ -6544,4 +6544,6 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
   }
   html[data-device-mode="mobile"] .deck-editor-mobile-actions button:disabled { opacity: .45; }
   html[data-device-mode="mobile"] .deck-editor-footer-actions { width: auto; }
+  html[data-device-mode="mobile"] .deck-card-preview-floating,
+  html[data-device-mode="mobile"] .deck-consumable-preview-floating { display: none !important; }
 }

@@ -1103,11 +1103,13 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
               <footer className="deck-editor-footer">
                   <div className="deck-editor-mobile-actions">
                     <span className="deck-editor-mobile-selection" aria-live="polite">
-                      {selectedMobileCard
+                      {selectedMobileCard && mobileSelectedCard?.area === "deck" && usesRareCardSlot(selectedMobileCard)
+                        ? "희귀 카드는 추출 티켓+로만 이동할 수 있습니다"
+                        : selectedMobileCard
                         ? `선택: ${selectedMobileCard.name}`
                         : selectedInventoryTicket
                           ? `티켓 선택: ${selectedInventoryTicket.consumable.name}`
-                          : "카드를 눌러 선택하세요"}
+                          : "카드를 고른 뒤 아래 버튼으로 이동하세요"}
                     </span>
                     {mobileSelectedCard?.area === "inventory" && (
                       <>
