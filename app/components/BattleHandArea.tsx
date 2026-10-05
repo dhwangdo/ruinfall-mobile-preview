@@ -88,7 +88,7 @@ export function BattleHandArea({
   const mobileLayout = useSyncExternalStore(subscribeDeviceMode, getMobileDeviceMode, getServerDeviceMode);
   const [windowStart, setWindowStart] = useState(0);
   const handArcRadius = mobileLayout ? 900 : HAND_ARC_RADIUS;
-  const handAngleStep = mobileLayout ? 2.2 : HAND_ANGLE_STEP;
+  const handAngleStep = mobileLayout ? 1.5 : HAND_ANGLE_STEP;
   const handCardStep = mobileLayout ? 70 : HAND_CARD_STEP;
   const fittingCardCount = [9, 7, 5, 3, 1].find((count) => {
     const angle = (count - 1) / 2 * handAngleStep * Math.PI / 180;

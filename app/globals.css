@@ -6797,3 +6797,218 @@ html[data-device-mode="mobile"] .deck-editor-footer .confirm { min-height: 32px;
   }
   html[data-device-mode="mobile"] .deck-editor-footer .confirm { display: none; }
 }
+
+/* Mobile battle layout pass: compact enemy cards and reserve a clear hand/action rail. */
+@media (orientation: landscape) {
+  html[data-device-mode="mobile"] .battlefield {
+    background: linear-gradient(180deg, #315f4b 0%, #356b55 48%, #2e5d49 100%);
+  }
+  html[data-device-mode="mobile"] .battle-topbar .turn-badge {
+    gap: 5px;
+    padding: 3px 7px;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 5px;
+    color: #f7f4eb;
+    background: rgba(12, 27, 21, .68);
+  }
+  html[data-device-mode="mobile"] .battle-topbar .turn-badge strong { color: #fff; font-size: 16px; }
+  html[data-device-mode="mobile"] .battle-card-ledger button {
+    border-color: rgba(255,255,255,.24);
+    background: rgba(13, 28, 22, .82);
+  }
+
+  html[data-device-mode="mobile"] .enemy-zone {
+    flex: 0 0 clamp(96px, 27dvh, 124px);
+    padding: 30px 4px 4px;
+    border-bottom: 1px solid rgba(255,255,255,.18);
+    background: rgba(20, 48, 37, .16);
+  }
+  html[data-device-mode="mobile"] .enemies-row,
+  html[data-device-mode="mobile"] .enemies-row.is-crowded {
+    height: 100%;
+    align-items: stretch;
+    justify-content: center;
+    gap: 6px;
+    padding: 2px 6px 3px;
+  }
+  html[data-device-mode="mobile"] .enemy-unit,
+  html[data-device-mode="mobile"] .enemies-row.is-crowded .enemy-unit {
+    display: grid;
+    flex: 0 0 min(38vw, 210px);
+    grid-template-columns: 46px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    align-self: stretch;
+    align-items: center;
+    justify-items: stretch;
+    width: min(38vw, 210px);
+    min-height: 0;
+    padding: 4px;
+    border: 1px solid rgba(232, 231, 207, .32);
+    border-radius: 6px;
+    background: rgba(12, 27, 21, .34);
+  }
+  html[data-device-mode="mobile"] .enemy-unit .monster {
+    grid-column: 1;
+    grid-row: 1;
+    width: 42px;
+    height: 48px;
+    margin: 0;
+    transform: none;
+  }
+  html[data-device-mode="mobile"] .enemy-unit .intent {
+    top: -8px;
+    right: -5px;
+    left: auto;
+    transform: scale(.62);
+    transform-origin: top right;
+  }
+  html[data-device-mode="mobile"] .enemy-unit .unit-stats {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    width: 100%;
+    min-width: 0;
+    text-align: left;
+  }
+  html[data-device-mode="mobile"] .enemy-unit .unit-stats > strong {
+    overflow: hidden;
+    margin: 0 0 3px;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  html[data-device-mode="mobile"] .enemy-unit .enemy-health-row {
+    justify-content: flex-start;
+    gap: 2px;
+    width: 100%;
+  }
+  html[data-device-mode="mobile"] .enemy-unit .enemy-health-popup-anchor {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+  }
+  html[data-device-mode="mobile"] .enemy-unit .enemy-defense-shield {
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    padding: 1px;
+  }
+  html[data-device-mode="mobile"] .enemy-unit .healthbar { height: 15px; border-width: 1px; }
+  html[data-device-mode="mobile"] .enemy-unit .healthbar span { font-size: 9px; }
+  html[data-device-mode="mobile"] .enemy-unit .enemy-intent-description {
+    display: -webkit-box;
+    margin-top: 3px;
+    padding: 2px 4px;
+    overflow: hidden;
+    border-color: rgba(30, 35, 28, .55);
+    border-radius: 3px;
+    background: rgba(247, 244, 235, .94);
+    box-shadow: none;
+    font: 600 8px/1.25 Pretendard, Arial, sans-serif;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  html[data-device-mode="mobile"] .enemy-unit .enemy-effects {
+    display: flex;
+    max-height: 14px;
+    gap: 2px;
+    margin-top: 2px;
+    overflow: hidden;
+    font-size: 7px;
+  }
+  html[data-device-mode="mobile"] .enemy-unit .enemy-effects span {
+    padding: 1px 3px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.12);
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  html[data-device-mode="mobile"] .pile-zone {
+    flex: 0 0 clamp(66px, 18dvh, 82px);
+    --pile-card-w: 52px;
+    padding: 2px 5px;
+    border-top: 1px solid rgba(255,255,255,.2);
+    border-bottom: 1px solid rgba(0,0,0,.18);
+    background: rgba(13, 32, 24, .16);
+  }
+  html[data-device-mode="mobile"] .solitaire-pile { --card-h: 68px; }
+  html[data-device-mode="mobile"] .center-drop-zone {
+    flex: 0 0 23px;
+    min-height: 23px;
+    background: rgba(0,0,0,.04);
+  }
+  html[data-device-mode="mobile"] .center-drop-zone .status-strip {
+    max-width: 78vw;
+    overflow: hidden;
+    font-size: 8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  html[data-device-mode="mobile"] .player-zone {
+    border-top: 1px solid rgba(255,255,255,.16);
+    background: linear-gradient(180deg, rgba(18, 47, 35, .14), rgba(18, 47, 35, .02));
+  }
+  html[data-device-mode="mobile"] .player-status-column {
+    top: 3px;
+    left: 6px;
+    transform: scale(.7);
+  }
+  html[data-device-mode="mobile"] .player-zone .hand {
+    padding: 0 136px calc(var(--hand-bottom-clearance, 36px) + 13px) 82px;
+    --card-w: 76px;
+    --card-h: 106px;
+    --card-name-size: 8.8pt;
+    --card-effect-size: 7.4pt;
+    --card-effect-minimum-scale: .82;
+  }
+  html[data-device-mode="mobile"] .player-zone .hand .game-card {
+    --card-w: 76px;
+    --card-h: 106px;
+  }
+  html[data-device-mode="mobile"] .player-zone .hand .card-face { border-radius: 5px; }
+  html[data-device-mode="mobile"] .player-zone .hand .card-cost {
+    top: 6px;
+    left: 7px;
+    font-size: 20px;
+  }
+  html[data-device-mode="mobile"] .player-zone .hand .card-effect {
+    gap: 2px;
+    padding: 5px 3px;
+    line-height: 1.32;
+  }
+  html[data-device-mode="mobile"] .player-zone .controls {
+    right: 4px;
+    bottom: 4px;
+    gap: 4px;
+  }
+  html[data-device-mode="mobile"] .mobile-hand-actions { gap: 4px; }
+  html[data-device-mode="mobile"] .mobile-hand-actions button,
+  html[data-device-mode="mobile"] .player-zone .end-turn {
+    min-height: 35px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+  }
+  html[data-device-mode="mobile"] .mobile-hand-actions .hand-window-step { min-width: 34px; }
+}
+
+@media (orientation: landscape) and (max-height: 430px) {
+  html[data-device-mode="mobile"] .enemy-zone {
+    flex-basis: 88px;
+    padding-top: 25px;
+  }
+  html[data-device-mode="mobile"] .pile-zone { flex-basis: 62px; }
+  html[data-device-mode="mobile"] .solitaire-pile { --card-h: 58px; }
+  html[data-device-mode="mobile"] .center-drop-zone { flex-basis: 19px; min-height: 19px; }
+  html[data-device-mode="mobile"] .player-zone .hand {
+    padding-bottom: calc(var(--hand-bottom-clearance, 36px) + 8px);
+    --card-w: 66px;
+    --card-h: 90px;
+  }
+  html[data-device-mode="mobile"] .player-zone .hand .game-card { --card-w: 66px; --card-h: 90px; }
+  html[data-device-mode="mobile"] .player-zone .controls { bottom: 2px; }
+  html[data-device-mode="mobile"] .mobile-hand-actions button,
+  html[data-device-mode="mobile"] .player-zone .end-turn { min-height: 30px; }
+}
+
