@@ -6720,8 +6720,8 @@ html[data-device-mode="mobile"] .deck-editor-footer .confirm { min-height: 32px;
   html[data-device-mode="mobile"] .deck-editor-column.inventory-column,
   html[data-device-mode="mobile"] .deck-editor-deck-row,
   html[data-device-mode="mobile"] .deck-editor-floor-section {
-    flex: 1 0 72px;
-    height: 72px;
+    flex: 0 0 80px;
+    height: 80px;
     border-color: rgba(255,255,255,.22);
     background: rgba(7,12,9,.18);
   }
