@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { CardFace } from "./CardFace";
+import { DeckEditorCardIcon } from "./DeckEditorCardIcon";
 import { HAND_PASSIVE_EFFECTS, UNPLAYABLE_CARD_EFFECTS, type Card } from "../game/cards";
 import { cardEnergyCost } from "../game/cardEffects";
 import type { GameState } from "../game/battleState";
@@ -394,7 +395,7 @@ export function BattleHandArea({
         >
           {displayedHand.map((card, index) => card ? (
             <button
-              className={`game-card card-face ${card.kind} ${card.damageType} ${HAND_PASSIVE_EFFECTS.has(card.effect) ? "has-hand-aura" : card.effect === "slime" ? "has-danger-aura is-toxic-slime" : ""} ${dragging?.card.id === card.id ? "is-dragging" : ""} ${hoveredHandCardId === card.id ? "is-pointer-hovered" : ""} ${selectedHandCardId === card.id ? "is-keyboard-selected" : ""} ${index < clampedWindowStart || index >= clampedWindowStart + visibleCardCount ? "is-outside-window" : ""}`}
+              className={`game-card card-face ${mobileLayout ? "uses-simplified-face" : ""} ${card.kind} ${card.damageType} ${HAND_PASSIVE_EFFECTS.has(card.effect) ? "has-hand-aura" : card.effect === "slime" ? "has-danger-aura is-toxic-slime" : ""} ${dragging?.card.id === card.id ? "is-dragging" : ""} ${hoveredHandCardId === card.id ? "is-pointer-hovered" : ""} ${selectedHandCardId === card.id ? "is-keyboard-selected" : ""} ${index < clampedWindowStart || index >= clampedWindowStart + visibleCardCount ? "is-outside-window" : ""}`}
               key={card.id}
               data-card-id={card.id}
               ref={(element) => {
@@ -428,16 +429,22 @@ export function BattleHandArea({
               disabled={(controlsLocked && game.pendingDiscards === 0) || card.id === pendingDiscardCardId}
               aria-label={UNPLAYABLE_CARD_EFFECTS.has(card.effect) ? `${card.name}, 비용 -, 사용 불가` : `${card.name}, 에너지 ${cardEnergyCost(card, lawResearchCount, game.forgeCount)}`}
             >
-              <CardFace
-                card={card}
-                starsSpent={game.starsSpent}
-                strength={game.strength + combatManualBonus + backToBasicsBonus(card)}
-                agility={game.agility + combatManualBonus + backToBasicsBonus(card)}
-                defenseMultiplier={game.defenseMultiplier}
-                ruleCostReduction={lawResearchCount}
-                forgeCount={game.forgeCount}
-                radiancePlayedThisTurn={game.radiancePlayedThisTurn}
-              />
+              {mobileLayout ? (
+                <div className={'battle-hand-simple-face rarity-' + card.rarity}>
+                  <DeckEditorCardIcon card={card} />
+                </div>
+              ) : (
+                <CardFace
+                  card={card}
+                  starsSpent={game.starsSpent}
+                  strength={game.strength + combatManualBonus + backToBasicsBonus(card)}
+                  agility={game.agility + combatManualBonus + backToBasicsBonus(card)}
+                  defenseMultiplier={game.defenseMultiplier}
+                  ruleCostReduction={lawResearchCount}
+                  forgeCount={game.forgeCount}
+                  radiancePlayedThisTurn={game.radiancePlayedThisTurn}
+                />
+              )}
             </button>
           ) : <div className={`hand-card-placeholder ${index < clampedWindowStart || index >= clampedWindowStart + visibleCardCount ? "is-outside-window" : ""}`} aria-hidden="true" key={`clear-slot-${index}`} style={handFanStyle(index)} />)}
         </div>
