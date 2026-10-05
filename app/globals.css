@@ -6094,6 +6094,7 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
   }
   html[data-device-mode="mobile"] .game-shell.map-shell button,
   html[data-device-mode="mobile"] .battlefield button { touch-action: manipulation; }
+  html[data-device-mode="mobile"] .battlefield .player-zone .hand .game-card { touch-action: none; }
 
   html[data-device-mode="mobile"] .battlefield {
     display: flex;
