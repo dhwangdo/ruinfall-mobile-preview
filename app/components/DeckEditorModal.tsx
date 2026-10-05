@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   Dispatch,
   DragEvent,
@@ -38,6 +38,9 @@ type TouchDragCandidate = {
   sectionScroller: HTMLElement | null;
   startX: number;
   startY: number;
+  sourceElement: HTMLElement;
+  grabOffsetX: number;
+  grabOffsetY: number;
   active: boolean;
 };
 type DeckDrag = { deckId: string; source: "floor" | "owned"; virtualKey?: string } | null;
@@ -242,6 +245,8 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
   const [ticketDropTarget, setTicketDropTarget] = useState<string | null>(null);
   const [touchDrag, setTouchDrag] = useState<TouchDragCandidate | null>(null);
   const touchDragRef = useRef<TouchDragCandidate | null>(null);
+  const touchDragPortalRef = useRef<HTMLDivElement | null>(null);
+  const touchDragGhostRef = useRef<HTMLElement | null>(null);
   const suppressTouchClickRef = useRef(false);
   const previewReleaseTimerRef = useRef<number | null>(null);
   const activityCallbackRef = useRef(onEditorDragActivityChange);
@@ -383,7 +388,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
     return (
       <button
         type="button"
-        className={`deck-editor-card deck-list-entry rarity-${card.rarity} ${card.rarity === "legendary" ? "is-painted" : ""} ${isTemporary ? `is-temporary ${pendingRemovalBlinkDim ? "is-blink-dim" : ""}` : ""} ${deckEditorDrag?.cardId === cardId ? "is-dragging" : ""} ${ticketDropTarget === ticketDropKey("deck", cardId, deck.id) ? "is-ticket-drop-target" : ""}`}
+        className={`deck-editor-card deck-list-entry rarity-${card.rarity} ${card.rarity === "legendary" ? "is-painted" : ""} ${isTemporary ? `is-temporary ${pendingRemovalBlinkDim ? "is-blink-dim" : ""}` : ""} ${deckEditorDrag?.cardId === cardId ? "is-dragging" : ""} ${touchDrag?.active && touchDrag.kind === "card" && touchDrag.id === cardId && touchDrag.source === "deck" && touchDrag.deckId === deck.id ? "is-touch-drag-origin" : ""} ${ticketDropTarget === ticketDropKey("deck", cardId, deck.id) ? "is-ticket-drop-target" : ""}`}
         key={item.key}
         style={deckEditorCardStackStyle(cardIds.length)}
         data-ticket-card-id={cardId}
@@ -429,8 +434,53 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
 
   useEffect(() => () => {
     if (previewReleaseTimerRef.current !== null) window.clearTimeout(previewReleaseTimerRef.current);
+    touchDragPortalRef.current?.remove();
+    touchDragPortalRef.current = null;
+    touchDragGhostRef.current = null;
     activityCallbackRef.current("card", false);
     activityCallbackRef.current("consumable", false);
+  }, []);
+
+  const clearTouchDragGhost = useCallback(() => {
+    touchDragPortalRef.current?.remove();
+    touchDragPortalRef.current = null;
+    touchDragGhostRef.current = null;
+  }, []);
+
+  const moveTouchDragGhost = useCallback((candidate: TouchDragCandidate, x: number, y: number) => {
+    if (!touchDragPortalRef.current || !touchDragGhostRef.current) {
+      const bounds = candidate.sourceElement.getBoundingClientRect();
+      const portal = document.createElement("div");
+      portal.className = "deck-editor-panel deck-editor-touch-drag-portal";
+      portal.setAttribute("aria-hidden", "true");
+      portal.style.cssText = "position:fixed;inset:0;z-index:100000;display:block;width:auto;height:auto;min-width:0;margin:0;padding:0;border:0;background:transparent;box-shadow:none;overflow:visible;pointer-events:none;transform:none";
+
+      const ghost = candidate.sourceElement.cloneNode(true) as HTMLElement;
+      ghost.classList.remove("is-dragging", "is-ticket-drop-target", "is-touch-drag-origin");
+      ghost.classList.add("is-touch-drag-preview");
+      ghost.setAttribute("aria-hidden", "true");
+      ghost.removeAttribute("id");
+      ghost.style.position = "fixed";
+      ghost.style.inset = "auto";
+      ghost.style.left = "0";
+      ghost.style.top = "0";
+      ghost.style.width = `${bounds.width}px`;
+      ghost.style.height = `${bounds.height}px`;
+      ghost.style.minHeight = `${bounds.height}px`;
+      ghost.style.flex = `0 0 ${bounds.width}px`;
+      ghost.style.margin = "0";
+      ghost.style.pointerEvents = "none";
+      ghost.style.transition = "none";
+      ghost.style.transformOrigin = "top left";
+      ghost.style.willChange = "transform";
+      ghost.style.boxShadow = "0 10px 24px rgba(0,0,0,.4)";
+      portal.appendChild(ghost);
+      document.body.appendChild(portal);
+      touchDragPortalRef.current = portal;
+      touchDragGhostRef.current = ghost;
+    }
+
+    touchDragGhostRef.current.style.transform = `translate3d(${x - candidate.grabOffsetX}px, ${y - candidate.grabOffsetY}px, 0) scale(1.04) rotate(-1deg)`;
   }, []);
 
   const beginDeckEditorDrag = (
@@ -637,6 +687,9 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
       sectionScroller: event.currentTarget.closest<HTMLElement>(".deck-editor-columns"),
       startX: event.clientX,
       startY: event.clientY,
+      sourceElement: event.currentTarget,
+      grabOffsetX: event.clientX - event.currentTarget.getBoundingClientRect().left,
+      grabOffsetY: event.clientY - event.currentTarget.getBoundingClientRect().top,
       active: false,
     };
   };
@@ -788,6 +841,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
         }
       }
       event.preventDefault();
+      moveTouchDragGhost(candidate, event.clientX, event.clientY);
       updateDropTarget(candidate, event.clientX, event.clientY);
     };
 
@@ -795,6 +849,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
       const candidate = touchDragRef.current;
       if (!candidate || event.pointerId !== candidate.pointerId) return;
       touchDragRef.current = null;
+      clearTouchDragGhost();
       if (candidate.active) {
         suppressTouchClickRef.current = true;
         window.setTimeout(() => { suppressTouchClickRef.current = false; }, 0);
@@ -809,6 +864,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
       const candidate = touchDragRef.current;
       if (!candidate || event.pointerId !== candidate.pointerId) return;
       touchDragRef.current = null;
+      clearTouchDragGhost();
       if (candidate.active) {
         if (candidate.kind === "card") finishDeckEditorDrag();
         else finishConsumableDrag();
@@ -825,6 +881,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
       document.removeEventListener("pointermove", handlePointerMove);
       document.removeEventListener("pointerup", handlePointerUp);
       document.removeEventListener("pointercancel", handlePointerCancel);
+      clearTouchDragGhost();
     };
   }, [
     applyTicketToCard,
@@ -838,6 +895,8 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
     finishConsumableDrag,
     finishDeckEditorDrag,
     finishTouchDrop,
+    clearTouchDragGhost,
+    moveTouchDragGhost,
     floorCardGroups,
     inventoryCardGroups,
     moveFloorConsumableToInventory,
@@ -856,7 +915,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
     return (
       <button
         type="button"
-        className={`consumable-ticket ${area === "inventory" ? "inventory-ticket" : "floor-ticket"} ${consumable.type} ${consumableTicketTierClassName(consumable.type)} ${isConsumableSelected(consumable) ? "is-selected" : ""} ${consumableDrag?.id === consumableId ? "is-dragging" : ""} ${ticketDropTarget === consumableTicketDropKey(consumableId) ? "is-ticket-drop-target" : ""}`}
+        className={`consumable-ticket ${area === "inventory" ? "inventory-ticket" : "floor-ticket"} ${consumable.type} ${consumableTicketTierClassName(consumable.type)} ${isConsumableSelected(consumable) ? "is-selected" : ""} ${consumableDrag?.id === consumableId ? "is-dragging" : ""} ${touchDrag?.active && touchDrag.kind === "consumable" && touchDrag.id === consumableId && touchDrag.source === area ? "is-touch-drag-origin" : ""} ${ticketDropTarget === consumableTicketDropKey(consumableId) ? "is-ticket-drop-target" : ""}`}
         key={item.key}
         style={deckEditorCardStackStyle(consumableIds.length)}
         data-deck-editor-ticket-id={consumableId}
@@ -914,7 +973,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
     if (pendingRemoval) {
       return (
         <div
-          className={`deck-editor-card is-pending-removal ${pendingRemovalBlinkDim ? "is-blink-dim" : ""} rarity-${card.rarity} ${card.rarity === "legendary" ? "is-painted" : ""} ${deckEditorDrag?.cardId === cardId ? "is-dragging" : ""}`}
+          className={`deck-editor-card is-pending-removal ${pendingRemovalBlinkDim ? "is-blink-dim" : ""} rarity-${card.rarity} ${card.rarity === "legendary" ? "is-painted" : ""} ${deckEditorDrag?.cardId === cardId ? "is-dragging" : ""} ${touchDrag?.active && touchDrag.kind === "card" && touchDrag.id === cardId && touchDrag.source === "pendingRemoval" ? "is-touch-drag-origin" : ""}`}
           key={item.key}
           style={deckEditorCardStackStyle(cardIds.length)}
           draggable
@@ -959,7 +1018,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
     return (
       <button
         type="button"
-        className={`deck-editor-card rarity-${card.rarity} ${card.rarity === "legendary" ? "is-painted" : ""} ${deckEditorDrag?.cardId === cardId ? "is-dragging" : ""} ${ticketDropTarget === location ? "is-ticket-drop-target" : ""}`}
+        className={`deck-editor-card rarity-${card.rarity} ${card.rarity === "legendary" ? "is-painted" : ""} ${deckEditorDrag?.cardId === cardId ? "is-dragging" : ""} ${touchDrag?.active && touchDrag.kind === "card" && touchDrag.id === cardId && touchDrag.source === area ? "is-touch-drag-origin" : ""} ${ticketDropTarget === location ? "is-ticket-drop-target" : ""}`}
         key={item.key}
         style={deckEditorCardStackStyle(cardIds.length)}
         data-ticket-card-id={cardId}

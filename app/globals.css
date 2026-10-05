@@ -6692,5 +6692,55 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
     color: #dce8df;
     font-size: 10px;
   }
-  html[data-device-mode="mobile"] .deck-editor-footer .confirm { min-height: 32px; padding: 4px 10px; font-size: 10px; }
+html[data-device-mode="mobile"] .deck-editor-footer .confirm { min-height: 32px; padding: 4px 10px; font-size: 10px; }
+}
+
+/* Touch drag feedback and final mobile editor layout adjustments. */
+.deck-editor-panel .deck-editor-card.is-touch-drag-origin,
+.deck-editor-panel .consumable-ticket.is-touch-drag-origin { opacity: .24; }
+.deck-editor-touch-drag-portal {
+  pointer-events: none !important;
+  background: transparent !important;
+}
+.deck-editor-touch-drag-portal .is-touch-drag-preview {
+  opacity: 1 !important;
+  cursor: grabbing;
+}
+
+@media (orientation: landscape) {
+  html[data-device-mode="mobile"] .deck-editor-overlay { box-sizing: border-box; padding: 3px; }
+  html[data-device-mode="mobile"] .deck-editor-panel {
+    grid-template-rows: 40px minmax(0, 1fr) 48px;
+  }
+  html[data-device-mode="mobile"] .deck-editor-footer {
+    grid-row: 3;
+    min-height: 48px;
+    padding: 4px 8px;
+  }
+  html[data-device-mode="mobile"] .deck-editor-column.inventory-column,
+  html[data-device-mode="mobile"] .deck-editor-deck-row,
+  html[data-device-mode="mobile"] .deck-editor-floor-section {
+    flex-basis: 72px;
+    height: 72px;
+    border-color: rgba(255,255,255,.22);
+    background: rgba(7,12,9,.18);
+  }
+  html[data-device-mode="mobile"] .deck-editor-column-title,
+  html[data-device-mode="mobile"] .deck-editor-deck-heading,
+  html[data-device-mode="mobile"] .deck-editor-floor-heading {
+    border-right-color: rgba(255,255,255,.22);
+    background: rgba(3,7,5,.24);
+  }
+  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card,
+  html[data-device-mode="mobile"] .deck-editor-panel .consumable-ticket,
+  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-empty-card-slot,
+  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-rare-slot {
+    flex-basis: 60px;
+    width: 60px;
+    height: 64px;
+    min-height: 64px;
+  }
+  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card .editor-card-name,
+  html[data-device-mode="mobile"] .deck-editor-panel .consumable-ticket > strong { font-size: 9px; }
+  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card .editor-card-cost { font-size: 14px; }
 }
