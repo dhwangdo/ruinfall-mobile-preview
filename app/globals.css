@@ -6547,3 +6547,148 @@ html[data-device-mode="mobile"] { --mobile-visual-viewport-height: 100dvh; }
   html[data-device-mode="mobile"] .deck-card-preview-floating,
   html[data-device-mode="mobile"] .deck-consumable-preview-floating { display: none !important; }
 }
+
+@media (orientation: landscape) {
+  html[data-device-mode="mobile"] .deck-editor-panel {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 40px minmax(0, 1fr) 42px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  html[data-device-mode="mobile"] .deck-editor-mobile-sections,
+  html[data-device-mode="mobile"] .deck-editor-mobile-decks { display: none !important; }
+  html[data-device-mode="mobile"] .deck-editor-columns {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    min-height: 0;
+    padding: 2px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  html[data-device-mode="mobile"] .deck-editor-column.inventory-column,
+  html[data-device-mode="mobile"] .deck-editor-deck-row,
+  html[data-device-mode="mobile"] .deck-editor-floor-section {
+    display: grid;
+    flex: 0 0 68px;
+    grid-template-columns: clamp(92px, 12vw, 132px) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    width: 100%;
+    height: 68px;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid #34463a;
+    background: #111b15;
+  }
+  html[data-device-mode="mobile"] .deck-editor-column.inventory-column { padding: 0; }
+  html[data-device-mode="mobile"] .deck-editor-column-title,
+  html[data-device-mode="mobile"] .deck-editor-deck-heading,
+  html[data-device-mode="mobile"] .deck-editor-floor-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    padding: 4px 6px;
+    border: 0;
+    border-right: 1px solid #34463a;
+    background: #1a2920;
+    touch-action: pan-y;
+  }
+  html[data-device-mode="mobile"] .deck-editor-column-title h3,
+  html[data-device-mode="mobile"] .deck-editor-deck-heading > span,
+  html[data-device-mode="mobile"] .deck-editor-floor-heading strong { margin: 0; font-size: 10px; }
+  html[data-device-mode="mobile"] .deck-editor-column-title > strong,
+  html[data-device-mode="mobile"] .deck-editor-deck-heading > small { font-size: 9px; }
+  html[data-device-mode="mobile"] .deck-editor-deck-heading > strong {
+    display: block;
+    flex: 0 1 auto;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 9px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  html[data-device-mode="mobile"] .deck-editor-decks {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    min-height: 0;
+    overflow: visible;
+  }
+  html[data-device-mode="mobile"] .deck-editor-deck-row:not(.is-selected) { display: grid; }
+  html[data-device-mode="mobile"] .deck-editor-deck-row.empty-deck-row { display: none; }
+  html[data-device-mode="mobile"] .deck-editor-deck-row.is-active-deck .deck-editor-deck-heading { background: #263b2d; }
+  html[data-device-mode="mobile"] .deck-editor-card-list,
+  html[data-device-mode="mobile"] .deck-editor-deck-list,
+  html[data-device-mode="mobile"] .deck-editor-floor-cards {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    gap: 5px;
+    padding: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    touch-action: pan-x;
+    scrollbar-width: none;
+  }
+  html[data-device-mode="mobile"] .deck-editor-card-list::-webkit-scrollbar,
+  html[data-device-mode="mobile"] .deck-editor-deck-list::-webkit-scrollbar,
+  html[data-device-mode="mobile"] .deck-editor-floor-cards::-webkit-scrollbar { display: none; }
+  html[data-device-mode="mobile"] .deck-editor-floor-section { padding: 0; }
+  html[data-device-mode="mobile"] .deck-editor-floor-heading { grid-column: 1; grid-row: 1; }
+  html[data-device-mode="mobile"] .deck-editor-floor-layout {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+  }
+  html[data-device-mode="mobile"] .deck-editor-deck-list { grid-column: 2; grid-row: 1; }
+  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card,
+  html[data-device-mode="mobile"] .deck-editor-panel .consumable-ticket,
+  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-empty-card-slot,
+  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-rare-slot {
+    flex: 0 0 54px;
+    width: 54px;
+    height: 58px;
+    min-height: 58px;
+    touch-action: pan-x;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card .editor-card-name,
+  html[data-device-mode="mobile"] .deck-editor-panel .consumable-ticket > strong { font-size: 8px; }
+  html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card .editor-card-cost { font-size: 13px; }
+  html[data-device-mode="mobile"] .deck-editor-column.is-drop-target,
+  html[data-device-mode="mobile"] .deck-editor-deck-row.is-drop-target,
+  html[data-device-mode="mobile"] .deck-editor-floor-cards.is-drop-target { outline: 2px solid #e6c77b; outline-offset: -2px; }
+  html[data-device-mode="mobile"] .deck-editor-footer {
+    grid-column: 1;
+    grid-row: 3;
+    min-width: 0;
+    padding: 3px 6px;
+  }
+  html[data-device-mode="mobile"] .deck-editor-mobile-actions { display: flex; flex: 1 1 auto; min-width: 0; }
+  html[data-device-mode="mobile"] .deck-editor-mobile-selection {
+    color: #dce8df;
+    font-size: 10px;
+  }
+  html[data-device-mode="mobile"] .deck-editor-footer .confirm { min-height: 32px; padding: 4px 10px; font-size: 10px; }
+}
