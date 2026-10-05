@@ -1,5 +1,7 @@
-import type { CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
 import { MAX_PLAYER_HP } from "../game/battleState";
+import { RESET_HOLD_DURATION_MS } from "../hooks/useRunKeyboardControls";
 
 type MapTopbarProps = {
   runPlayerHp: number;
@@ -12,6 +14,7 @@ type MapTopbarProps = {
   onOpenDeckViewer: () => void;
   onWait: () => void;
   onEditDeck: () => void;
+  onRestart: () => void;
 };
 
 export function MapTopbar({
@@ -25,7 +28,58 @@ export function MapTopbar({
   onOpenDeckViewer,
   onWait,
   onEditDeck,
+  onRestart,
 }: MapTopbarProps) {
+  const [restartHoldProgress, setRestartHoldProgress] = useState(0);
+  const restartHoldStartedAtRef = useRef<number | null>(null);
+  const restartHoldTimerRef = useRef<number | null>(null);
+
+  const stopRestartHold = () => {
+    restartHoldStartedAtRef.current = null;
+    if (restartHoldTimerRef.current !== null) window.clearInterval(restartHoldTimerRef.current);
+    restartHoldTimerRef.current = null;
+    setRestartHoldProgress(0);
+  };
+
+  const startRestartHold = () => {
+    if (restartHoldTimerRef.current !== null) return;
+    restartHoldStartedAtRef.current = performance.now();
+    restartHoldTimerRef.current = window.setInterval(() => {
+      const startedAt = restartHoldStartedAtRef.current;
+      if (startedAt === null) return;
+      const progress = Math.min(1, (performance.now() - startedAt) / RESET_HOLD_DURATION_MS);
+      setRestartHoldProgress(progress);
+      if (progress < 1) return;
+      if (restartHoldTimerRef.current !== null) window.clearInterval(restartHoldTimerRef.current);
+      restartHoldTimerRef.current = null;
+      restartHoldStartedAtRef.current = null;
+      onRestart();
+    }, 50);
+  };
+
+  useEffect(() => () => {
+    if (restartHoldTimerRef.current !== null) window.clearInterval(restartHoldTimerRef.current);
+  }, []);
+
+  const handleRestartPointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    startRestartHold();
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // The pointer may already have ended on older mobile browsers.
+    }
+  };
+
+  const handleRestartKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    if ((event.key !== " " && event.key !== "Enter") || event.repeat) return;
+    event.preventDefault();
+    startRestartHold();
+  };
+
+  const restartButtonStyle = { "--restart-hold-progress": restartHoldProgress } as CSSProperties;
+
   return (
     <header className="topbar map-topbar">
       <div className="map-top-actions">
@@ -64,6 +118,24 @@ export function MapTopbar({
           aria-label="한 턴 쉬기: 현재 칸에 머물며 적만 행동하게 합니다"
         >
           한 턴 쉼
+        </button>
+        <button
+          type="button"
+          className="map-restart-trigger"
+          style={restartButtonStyle}
+          title="길게 눌러 다시하기 · 현재 진행을 초기화합니다"
+          aria-label="길게 눌러 다시하기. 현재 진행을 초기화합니다"
+          onPointerDown={handleRestartPointerDown}
+          onPointerUp={stopRestartHold}
+          onPointerCancel={stopRestartHold}
+          onPointerLeave={stopRestartHold}
+          onKeyDown={handleRestartKeyDown}
+          onKeyUp={stopRestartHold}
+          onBlur={stopRestartHold}
+          onContextMenu={(event) => event.preventDefault()}
+        >
+          <span className="map-restart-progress" aria-hidden="true" />
+          <span className="map-restart-label">다시하기</span>
         </button>
         {canEditDeck && (
           <button

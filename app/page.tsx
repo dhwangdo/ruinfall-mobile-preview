@@ -4115,6 +4115,10 @@ export default function Home() {
             setDeckViewerOpen(true);
           }}
           onWait={waitOnMap}
+          onRestart={() => {
+            clearRunSave();
+            startNewRun();
+          }}
           onEditDeck={() => openDeckEditor(usesSafeAreaDeckRules
             ? "덱 카드를 인벤토리로 회수할 수 있습니다. 희귀도에 따라 골드를 냅니다."
             : "좌클릭: 바닥 → 인벤토리 → 덱. 덱 카드 우클릭·바닥 드래그: 제거 예정 상태")}

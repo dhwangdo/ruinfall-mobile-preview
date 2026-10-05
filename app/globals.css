@@ -6744,3 +6744,56 @@ html[data-device-mode="mobile"] .deck-editor-footer .confirm { min-height: 32px;
   html[data-device-mode="mobile"] .deck-editor-panel .consumable-ticket > strong { font-size: 9px; }
   html[data-device-mode="mobile"] .deck-editor-panel .deck-editor-card .editor-card-cost { font-size: 14px; }
 }
+
+.deck-editor-confirm-mobile { display: none; }
+.map-restart-trigger {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 92px;
+  min-height: 54px;
+  padding: 8px 12px;
+  overflow: hidden;
+  border: 1px solid #8e3935;
+  border-radius: 3px;
+  color: #fff4eb;
+  background: #783a35;
+  cursor: pointer;
+  font: 700 14px Arial, sans-serif;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.map-restart-progress {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: rgba(248, 196, 129, .35);
+  pointer-events: none;
+  transform: scaleX(var(--restart-hold-progress, 0));
+  transform-origin: left center;
+  transition: transform .05s linear;
+}
+.map-restart-label { position: relative; z-index: 1; pointer-events: none; }
+
+@media (orientation: landscape) {
+  html[data-device-mode="mobile"] .map-restart-trigger {
+    min-width: 68px;
+    min-height: 34px;
+    padding: 3px 6px;
+    font-size: 10px;
+    touch-action: none;
+  }
+  html[data-device-mode="mobile"] .deck-editor-confirm-mobile {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    margin-left: 4px;
+    padding: 3px 9px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  html[data-device-mode="mobile"] .deck-editor-footer .confirm { display: none; }
+}

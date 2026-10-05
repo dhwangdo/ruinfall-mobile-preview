@@ -1124,6 +1124,12 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
                     <button type="button" className={deckEditorSort === "rarity" ? "is-active" : ""} onClick={() => setDeckEditorSort("rarity")}>희귀도 순</button>
                   </div>
                 </div>
+                <button
+                  type="button"
+                  className="confirm deck-editor-confirm-mobile"
+                  onClick={confirmDeckEditor}
+                  disabled={deckEditorInventoryItemCount > inventoryCapacity}
+                >확인</button>
               </header>
 
               <div className="deck-editor-columns">
