@@ -222,6 +222,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
   const [deckCaseDropSlot, setDeckCaseDropSlot] = useState<number | null>(null);
   const [ticketDropTarget, setTicketDropTarget] = useState<string | null>(null);
   const [mobileSelectedDeckCard, setMobileSelectedDeckCard] = useState<{ cardId: number; deckId: string } | null>(null);
+  const [mobileEditorSection, setMobileEditorSection] = useState<"inventory" | "decks" | "floor">("decks");
   const previewReleaseTimerRef = useRef<number | null>(null);
   const activityCallbackRef = useRef(onEditorDragActivityChange);
 
@@ -796,7 +797,7 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
     <div className="deck-editor-overlay" role="dialog" aria-modal="true" aria-labelledby="deck-editor-title">
 
             <div className="deck-editor-stage">
-              <section className="deck-editor-panel" onClick={(event) => event.stopPropagation()}>
+              <section className="deck-editor-panel" data-mobile-section={mobileEditorSection} onClick={(event) => event.stopPropagation()}>
               <header className="deck-editor-header">
                 <div>
                   <h2 id="deck-editor-title">덱 편집</h2>
@@ -809,6 +810,42 @@ export function DeckEditorModal(props: DeckEditorModalProps) {
                   </div>
                 </div>
               </header>
+
+              <nav className="deck-editor-mobile-sections" aria-label="덱 편집 영역">
+                <button
+                  type="button"
+                  className={mobileEditorSection === "inventory" ? "is-active" : ""}
+                  aria-pressed={mobileEditorSection === "inventory"}
+                  onClick={() => setMobileEditorSection("inventory")}
+                >인벤토리 <small>{deckEditorInventoryItemCount}/{inventoryCapacity}</small></button>
+                <button
+                  type="button"
+                  className={mobileEditorSection === "decks" ? "is-active" : ""}
+                  aria-pressed={mobileEditorSection === "decks"}
+                  onClick={() => setMobileEditorSection("decks")}
+                >덱</button>
+                <button
+                  type="button"
+                  className={mobileEditorSection === "floor" ? "is-active" : ""}
+                  aria-pressed={mobileEditorSection === "floor"}
+                  onClick={() => setMobileEditorSection("floor")}
+                >바닥 <small>{floorVirtualItems.length}</small></button>
+              </nav>
+
+              <nav className="deck-editor-mobile-decks" aria-label="편집할 덱 선택">
+                {ownedDecks.map((deck, index) => (
+                  <button
+                    type="button"
+                    key={deck.id}
+                    className={deck.id === editingDeck?.id ? "is-active" : ""}
+                    aria-pressed={deck.id === editingDeck?.id}
+                    onClick={() => setDeckEditorDeckId(deck.id)}
+                  >
+                    <span>덱 {index + 1} · <DeckName deck={deck} showEditionTooltips={false} /></span>
+                    <small>{deck.cards.length}/{deck.capacity}</small>
+                  </button>
+                ))}
+              </nav>
 
               <div className="deck-editor-columns">
                 <section
